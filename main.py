@@ -24,7 +24,6 @@ class BankingService:
             self.url = config('ORDER_SERVICE_URL', default=False, cast=str)
         else:
             self.url = "http://order-service:8083/graphql/"
-        self.service_name = 'User'
         self._connect()
 
     def _connect(self):
