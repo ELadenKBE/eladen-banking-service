@@ -15,21 +15,34 @@ from errors import ValidationError
 class BankingService:
     channel = None
     connection = None
-    url = config('ORDER_SERVICE_URL', default=False, cast=str)
+
 
     def __init__(self):
+
+        local_mode = config('LOCAL_MODE', default=False, cast=bool)
+        if local_mode:
+            self.url = config('ORDER_SERVICE_URL', default=False, cast=str)
+        else:
+            self.url = "http://order-service:8083/graphql/"
+        self.service_name = 'User'
         self._connect()
 
     def _connect(self):
-        # Connection parameters
-        host = config('RABBITMQ_HOST', default=False, cast=str)
-        username = config('RABBITMQ_USERNAME', default=False, cast=str)
-        password = config('RABBITMQ_PASSWORD', default=False, cast=str)
-        connection_params = pika.ConnectionParameters(
-            host=host, credentials=PlainCredentials(username=username,
-                                                    password=password))
-        self.connection = pika.BlockingConnection(connection_params)
-        self.channel = self.connection.channel()
+        try:
+            # Connection parameters
+            host = config('RABBITMQ_HOST', default=False, cast=str)
+            username = config('RABBITMQ_USERNAME', default=False, cast=str)
+            password = config('RABBITMQ_PASSWORD', default=False, cast=str)
+            connection_params = pika.ConnectionParameters(
+                host=host, credentials=PlainCredentials(username=username,
+                                                        password=password))
+            self.connection = pika.BlockingConnection(connection_params)
+            self.channel = self.connection.channel()
+        except pika.exceptions.AMQPConnectionError:
+            time.sleep(1000)
+            print("MQ is not reachable. reconnect...")
+            self._connect()
+
 
     def _listen_queue(self, queue_name: str, callback: Callable):
         # Declare a queue named 'checkout_queue'
