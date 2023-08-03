@@ -22,9 +22,9 @@ class BankingService:
 
     def _connect(self):
         # Connection parameters
-        host = config('RABBITMQ_HOST', default=False, cast=str)
-        username = config('RABBITMQ_USERNAME', default=False, cast=str)
-        password = config('RABBITMQ_PASSWORD', default=False, cast=str)
+        host = config('RABBITMQ_HOST', default="rabbitmq", cast=str)
+        username = config('RABBITMQ_USERNAME', default="admin", cast=str)
+        password = config('RABBITMQ_PASSWORD', default="12345", cast=str)
         connection_params = pika.ConnectionParameters(
             host=host, credentials=PlainCredentials(username=username,
                                                     password=password))
@@ -54,6 +54,7 @@ class BankingService:
             }}"""
         formatted_query = query.format(id)
        # time.sleep(1500)
+        print("sending message to order service")
         response = requests.post(self.url,
                                  data={'query': formatted_query})
         self.validate_errors(response)
