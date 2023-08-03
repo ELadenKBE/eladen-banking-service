@@ -18,13 +18,19 @@ class BankingService:
     url = config('ORDER_SERVICE_URL', default=False, cast=str)
 
     def __init__(self):
+
+        local_mode = config('LOCAL_MODE', default=False, cast=bool)
+        if local_mode:
+            self.url = config('ORDER_SERVICE_URL', default=False, cast=str)
+        else:
+            self.url = "http://order-service:8083/graphql/"
         self._connect()
 
     def _connect(self):
         # Connection parameters
-        host = config('RABBITMQ_HOST', default="rabbitmq", cast=str)
-        username = config('RABBITMQ_USERNAME', default="admin", cast=str)
-        password = config('RABBITMQ_PASSWORD', default="12345", cast=str)
+        host = config('RABBITMQ_HOST', default=False, cast=str)
+        username = config('RABBITMQ_USERNAME', default=False, cast=str)
+        password = config('RABBITMQ_PASSWORD', default=False, cast=str)
         connection_params = pika.ConnectionParameters(
             host=host, credentials=PlainCredentials(username=username,
                                                     password=password))
